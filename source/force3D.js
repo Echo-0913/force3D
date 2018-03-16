@@ -3,7 +3,7 @@
         version: "0.0.1"
     };
     force_3D.force = function () {
-        var force = {}, timer, size = [1, 1, 1], drag, alpha, friction = .9, linkDistance = 20, linkStrength = 1, charge = -30, chargeDistance2 = Infinity, gravity = .1, theta2 = .64, nodes = [], links = [], distances, strengths, charges, distanceMin2 = 1, distanceMax2 = Infinity;
+        var force = {}, timer, center = {}, size = [1, 1, 1], drag, alpha, friction = .9, linkDistance = 20, linkStrength = 1, charge = -30, chargeDistance2 = Infinity, gravity = .1, theta2 = .64, nodes = [], links = [], distances, strengths, charges, distanceMin2 = 1, distanceMax2 = Infinity;
 
         force.eventList = {};
 
@@ -233,9 +233,9 @@
             // 初始化坐标
             for (i = 0; i < n; ++i) {
                 o = nodes[i];
-                if (isNaN(o.x)) o.x = position("x", w);
-                if (isNaN(o.y)) o.y = position("y", h);
-                if (isNaN(o.z)) o.z = position("z", z);
+                if (isNaN(o.x)) o.x = position("x", w, center.x);
+                if (isNaN(o.y)) o.y = position("y", h, center.y);
+                if (isNaN(o.z)) o.z = position("z", z, center.z);
                 if (isNaN(o.px)) o.px = o.x;
                 if (isNaN(o.py)) o.py = o.y;
                 if (isNaN(o.pz)) o.pz = o.z;
@@ -266,7 +266,7 @@
                     charges[i] = charge;
 
 
-            function position(dimension, size) {
+            function position(dimension, size, center) {
                 if (!neighbors) {
                     neighbors = new Array(n);
                     for (j = 0; j < n; ++j) {
@@ -279,7 +279,10 @@
                     }
                 }
                 var candidates = neighbors[i], j = -1, l = candidates.length, x;
-                return Math.random() * size;
+                if (typeof center != "undefined")
+                    return (Math.random() * size) - size / 2 + center;
+                else
+                    return Math.random() * size;
             }
             return force.resume();
         }
@@ -319,10 +322,16 @@
             }
             //节点根据整体引力居中
             if (k = alpha * gravity) {
-                x = size[0] / 2;
-                y = size[1] / 2;
-                z = size[2] / 2;
-
+                if (Object.keys(center).length) {
+                    x = center.x;
+                    y = center.y;
+                    z = center.z;
+                }
+                else {
+                    x = size[0] / 2;
+                    y = size[1] / 2;
+                    z = size[2] / 2;
+                }
                 i = -1;
 
                 if (k) while (++i < n) {
@@ -369,6 +378,7 @@
             return force;
         };
         force.center = function (x, y, z) {
+            center = { x: x, y: y, z: z };
             let sumX = 0, sumY = 0, sumZ = 0, averageX = 0, averageY = 0, averageZ = 0, deltaX = 0, deltaY = 0, deltaZ = 0;
             for (let i = 0; i < nodes.length; i++) {
                 sumX += nodes[i].x;

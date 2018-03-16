@@ -3,7 +3,7 @@
         version: "0.0.1"
     };
     force_3D.force = function () {
-        var force = {}, timer, size = [1, 1], drag, alpha, friction = .9, linkDistance = 20, linkStrength = 1, charge = -30, chargeDistance2 = Infinity, gravity = .1, theta2 = .64, nodes = [], links = [], distances, strengths, charges, distanceMin2 = 1, distanceMax2 = Infinity;
+        var force = {}, timer, size = [1, 1, 1], drag, alpha, friction = .9, linkDistance = 20, linkStrength = 1, charge = -30, chargeDistance2 = Infinity, gravity = .1, theta2 = .64, nodes = [], links = [], distances, strengths, charges, distanceMin2 = 1, distanceMax2 = Infinity;
 
         force.eventList = {};
 
@@ -361,7 +361,6 @@
             if (force.eventList.tick instanceof Function) {
                 force.eventList.tick();
             }
-            // force.tick();            
         }
         force.on = function (type, listener) {
             if (typeof force.eventList[type] == "undefined") {
@@ -369,29 +368,53 @@
             }
             return force;
         };
-    //     force.drag = function () {
-    //         if (!drag) drag = d3.behavior.drag().origin((d)=>d).on("dragstart.force", d3_layout_forceDragstart).on("drag.force", dragmove).on("dragend.force", d3_layout_forceDragend);
-    //         if (!arguments.length) return drag;
-    //         this.on("mouseover.force", d3_layout_forceMouseover).on("mouseout.force", d3_layout_forceMouseout).call(drag);
-    //     };
-    //     function dragmove(d) {
-    //         d.px = d3.event.x, d.py = d3.event.y;
-    //         force.resume();
-    //     }
-    //     function d3_layout_forceDragstart(d) {
-    //         d.fixed |= 2;
-    //     }
-    //     function d3_layout_forceDragend(d) {
-    //         d.fixed &= ~6;
-    //     }
-    //     function d3_layout_forceMouseover(d) {
-    //         d.fixed |= 4;
-    //         d.px = d.x, d.py = d.y;
-    //     }
-    //     function d3_layout_forceMouseout(d) {
-    //         d.fixed &= ~4;
-    //     }
-    //     return force;
+        force.center = function (x, y, z) {
+            let sumX = 0, sumY = 0, sumZ = 0, averageX = 0, averageY = 0, averageZ = 0, deltaX = 0, deltaY = 0, deltaZ = 0;
+            for (let i = 0; i < nodes.length; i++) {
+                sumX += nodes[i].x;
+                sumY += nodes[i].y;
+                sumZ += nodes[i].z;
+            }
+            averageX = sumX / nodes.length;
+            averageY = sumY / nodes.length;
+            averageZ = sumZ / nodes.length;
+            if (!arguments.length) {
+                return { averageX, averageY, averageZ }
+            } else {
+                deltaX = x - averageX;
+                deltaY = y - averageY;
+                deltaZ = z - averageZ;
+                for (let i = 0; i < nodes.length; i++) {
+                    nodes[i].x += deltaX;
+                    nodes[i].y += deltaY;
+                    nodes[i].z += deltaZ;
+                }
+                return force
+            }
+        };
+        // force.drag = function () {
+        //     if (!drag) drag = d3.behavior.drag().origin((d)=>d).on("dragstart.force", d3_layout_forceDragstart).on("drag.force", dragmove).on("dragend.force", d3_layout_forceDragend);
+        //     if (!arguments.length) return drag;
+        //     this.on("mouseover.force", d3_layout_forceMouseover).on("mouseout.force", d3_layout_forceMouseout).call(drag);
+        // };
+        // function dragmove(d) {
+        //     d.px = d3.event.x, d.py = d3.event.y;
+        //     force.resume();
+        // }
+        // function d3_layout_forceDragstart(d) {
+        //     d.fixed |= 2;
+        // }
+        // function d3_layout_forceDragend(d) {
+        //     d.fixed &= ~6;
+        // }
+        // function d3_layout_forceMouseover(d) {
+        //     d.fixed |= 4;
+        //     d.px = d.x, d.py = d.y;
+        // }
+        // function d3_layout_forceMouseout(d) {
+        //     d.fixed &= ~4;
+        // }
+        return force;
     }
     this.force_3D = force_3D;
 })();

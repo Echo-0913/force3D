@@ -1,0 +1,261 @@
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<title>Pack</title>
+	<style>
+		body {
+			background-color: #000000;
+			margin: 0px;
+			overflow: hidden;
+		}
+
+		#text {
+			color: #ffffff;
+			position: absolute;
+			display: none;
+		}
+
+		a {
+			color: #0078ff;
+		}
+	</style>
+</head>
+
+<body>
+	<div id='states'></div>
+	<div id='value'></div>
+	<div id="text">
+		<div id="node1.x"></div>
+		<div id="node1.y"></div>
+		<div id="node1.z"></div>
+		</br>
+		<div id="node2.x"></div>
+		<div id="node2.y"></div>
+		<div id="node2.z"></div>
+		</br>
+		<div id="node3.x"></div>
+		<div id="node3.y"></div>
+		<div id="node3.z"></div>
+		</br>
+		<div id="node4.x"></div>
+		<div id="node4.y"></div>
+		<div id="node4.z"></div>
+		</br>
+
+		<div id="x"></div>
+		<div id="y"></div>
+		<div id="z"></div>
+		<div id="k"></div>
+		</br>
+	</div>
+
+	<script src="lib/d3.js"></script>
+
+	<script src="lib/octree.js"></script>
+	<script src="lib/force3D.js"></script>
+
+	<script src="https://cdn.bootcss.com/three.js/r83/three.min.js"></script>
+	<script src="lib/OrbitControls.js"></script>
+
+	<script>
+
+		d3.json('Data/Block.json', function (data) {
+			run(data);
+		})
+
+		function run(testData) {
+			var width = 500;
+			var height = 500;
+			var long = 500;
+			var force = force_3D.force()
+				.size([width, height, long])
+				.nodes(testData.nodes)
+				.links(testData.links);
+			force.on("start", function () {
+				console.log("start");
+			})
+				.on("end", function () {
+					console.log("end");
+					console.log(testData.links.length);
+					console.log(testData.nodes.length);
+					var dx = 0;
+					var dy = 0;
+					var dz = 0;
+					var maxX = -Infinity;
+					var maxY = -Infinity;
+					var maxZ = -Infinity;
+					var minX = Infinity;
+					var minY = Infinity;
+					var minZ = Infinity;
+					var nodes = testData.nodes;
+					for (var i = 0; i < nodes.length; i++) {
+						if (nodes[i].x > maxX) {
+							maxX = nodes[i].x;
+						}
+						if (nodes[i].z > maxZ) {
+							maxZ = nodes[i].z;
+						}
+						if (nodes[i].y > maxY) {
+							maxY = nodes[i].y;
+						}
+						if (nodes[i].x < minX) {
+							minX = nodes[i].x;
+						}
+						if (nodes[i].y < minY) {
+							minY = nodes[i].y;
+						}
+						if (nodes[i].z < minZ) {
+							minZ = nodes[i].z;
+						}
+					}
+					console.log("MaxX " + maxX);
+					console.log("MaxY " + maxY);
+					console.log("MaxZ " + maxZ);
+
+					console.log("MinX " + minX);
+					console.log("MinY " + minY);
+					console.log("MinZ " + minZ);
+
+					console.log("dX " + (maxX - minX));
+					console.log("dY " + (maxY - minY));
+					console.log("dZ " + (maxZ - minZ));
+				})
+				.on('tick', function () {
+					// console.log(force.alpha());
+				})
+				.start()
+
+			function ParticleEffect(Data) {
+				var container, stats;
+
+				var camera, scene, renderer;
+
+				var windowHalfX = window.innerWidth / 2;
+				var windowHalfY = window.innerHeight / 2;
+
+				const AREA = 2000;
+				const DEEP = 10000;
+				const CAMERA_DISTANCE = 1000;
+				const PAERICLE_SIZE = 10;
+
+				const PAERICLE_NUMBER = Data.nodes.length;
+				const LINES_NUMBER = Data.links.length;
+
+				var PAERICLESDATA = [];
+				var PAERICLES = [];
+				var POINTS = [];
+
+				var Points;
+				var Lines;
+
+				function initThree() {
+					container = document.createElement('div');
+					container.id = 'Three';
+					document.body.appendChild(container);
+
+					renderer = new THREE.WebGLRenderer({ antialias: !1, alpha: !0 });
+					renderer.setClearColor("#000000");
+					renderer.setPixelRatio(window.devicePixelRatio);
+					renderer.setSize(window.innerWidth, window.innerHeight);
+					container.appendChild(renderer.domElement);
+
+					window.addEventListener('resize', onWindowResize, false);
+					controls = new THREE.OrbitControls(camera, renderer.domElement);
+
+					function onWindowResize() {
+
+						windowHalfX = window.innerWidth / 2;
+						windowHalfY = window.innerHeight / 2;
+
+						camera.aspect = window.innerWidth / window.innerHeight;
+						camera.updateProjectionMatrix();
+
+						renderer.setSize(window.innerWidth, window.innerHeight);
+
+					}
+
+				}
+				function initCamera() {
+					camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, DEEP);
+					camera.position.z = CAMERA_DISTANCE;
+					camera.position.x = 0;
+					camera.position.y = 0;
+				}
+				function initScene() {
+					scene = new THREE.Scene();
+				}
+				function initObject() {
+					particleMaterial = new THREE.PointsMaterial({
+						fog: true,
+						size: PAERICLE_SIZE,
+						blending: THREE.AdditiveBlending,
+						depthTest: !0,
+						alphaTest: .1,
+						opacity: 1,
+						transparent: !0
+					});
+					linematerial = new THREE.LineBasicMaterial({ color: "#fff", linewidth: 3 });
+
+					particleGeometry = new THREE.Geometry();
+					lineGeometry = new THREE.Geometry();
+
+					for (var i = 0; i < PAERICLE_NUMBER; i++) {
+						let status = { value: 1, index: i };
+						let point = new THREE.Vector3(Data.nodes[i].x, Data.nodes[i].y, Data.nodes[i].z);
+						particleGeometry.vertices.push(point);
+						POINTS.push(point);
+					}
+					for (var i = 0; i < LINES_NUMBER; i++) {
+						// console.log(Data.links[i]);
+						lineGeometry.vertices.push(POINTS[Data.links[i].source.index]);
+						lineGeometry.vertices.push(POINTS[Data.links[i].target.index]);
+					}
+
+					Points = new THREE.Points(particleGeometry, particleMaterial);
+					Line = new THREE.LineSegments(lineGeometry, linematerial);
+
+					scene.add(Points);
+					scene.add(Line);
+				}
+
+				function initStats() {
+					stats = new Stats();
+					document.body.appendChild(stats.dom);
+				}
+
+				function threeStart() {
+					initScene();
+					initCamera();
+
+					initThree();
+					initObject();
+					animate();
+				}
+				function changePersetion() {
+					for (let i = 0; i < PAERICLE_NUMBER; i++) {
+						POINTS[i].x = Data.nodes[i].x;
+						POINTS[i].y = Data.nodes[i].y;
+						POINTS[i].z = Data.nodes[i].z;
+					}
+				}
+				function animate() {
+					particleGeometry.verticesNeedUpdate = true;
+					lineGeometry.verticesNeedUpdate = true;
+					particleGeometry.computeBoundingSphere();
+					controls.target = particleGeometry.boundingSphere.center;
+
+					renderer.render(scene, camera);
+					controls.update();
+					changePersetion();
+					requestAnimationFrame(animate);
+				}
+				threeStart()
+			}
+			ParticleEffect(testData);
+		}
+	</script>
+
+</body>
+
+</html>

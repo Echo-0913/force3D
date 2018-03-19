@@ -1,6 +1,6 @@
 (function () {
     var force_3D = {
-        version: "0.0.1"
+        version: "0.0.3"
     };
     force_3D.force = function () {
         var force = {}, timer, center = {}, size = [1, 1, 1], drag, alpha, friction = .9, linkDistance = 20, linkStrength = 1, charge = -30, chargeDistance2 = Infinity, gravity = .1, theta2 = .64, nodes = [], links = [], distances, strengths, charges, distanceMin2 = 1, distanceMax2 = Infinity;

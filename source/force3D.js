@@ -296,7 +296,7 @@
                 }
                 return true;
             }
-            var n = nodes.length, m = links.length, q, i, o, s, t, l, k, x, y, z;
+            var n = nodes.length, m = links.length, q, i, o, s, t, l, k, x, y, z, maxx = -Infinity, maxy = -Infinity, maxz = -Infinity, minx = Infinity, miny = Infinity, minz = Infinity;
             // 节点根据引力靠近
             for (i = 0; i < m; ++i) {
                 o = links[i];
@@ -366,6 +366,27 @@
                     o.y -= (o.py - (o.py = o.y)) * friction;
                     o.z -= (o.pz - (o.pz = o.z)) * friction;
                 }
+                if (maxx < o.x) {
+                    maxx = o.x;
+                }
+                if (maxy < o.y) {
+                    maxy = o.y;
+                }
+                if (maxz < o.z) {
+                    maxz = o.z;
+                }
+                if (minx > o.x) {
+                    minx = o.x;
+                }
+                if (miny > o.y) {
+                    miny = o.y;
+                }
+                if (minz > o.z) {
+                    minz = o.z;
+                }
+                size[0] = maxx - minx;
+                size[1] = maxy - miny;
+                size[2] = maxz - minz;
             }
             if (force.eventList.tick instanceof Function) {
                 force.eventList.tick();

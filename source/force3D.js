@@ -186,7 +186,7 @@
             theta2 = x * x;
             return force;
         };
-        force.resume = function () {
+        force.restart = function () {
             return force.alpha(.1);
         };
         force.stop = function () {
@@ -284,16 +284,16 @@
                 else
                     return Math.random() * size;
             }
-            return force.resume();
+            return force.restart();
         }
         force.tick = function () {
             // 稳定系数的降低
             if ((alpha *= .99) < .005) {
                 clearInterval(timer)
+                alpha = 0;
                 if (force.eventList.end instanceof Function) {
                     force.eventList.end();
                 }
-                alpha = 0;
                 return true;
             }
             var n = nodes.length, m = links.length, q, i, o, s, t, l, k, x, y, z;

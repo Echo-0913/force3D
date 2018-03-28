@@ -1,9 +1,9 @@
 (function () {
     var force_3D = {
-        version: "0.0.1"
+        version: "0.0.3"
     };
     force_3D.force = function () {
-        var force = {}, timer, size = [1, 1], drag, alpha, friction = .9, linkDistance = 20, linkStrength = 1, charge = -30, chargeDistance2 = Infinity, gravity = .1, theta2 = .64, nodes = [], links = [], distances, strengths, charges, distanceMin2 = 1, distanceMax2 = Infinity;
+        var force = {}, timer, center = [], size = [1, 1, 1], drag, alpha, friction = .9, linkDistance = 20, linkStrength = 1, charge = -30, chargeDistance2 = Infinity, gravity = .1, theta2 = .64, nodes = [], links = [], distances, strengths, charges, distanceMin2 = 1, distanceMax2 = Infinity;
 
         force.eventList = {};
 
@@ -186,7 +186,7 @@
             theta2 = x * x;
             return force;
         };
-        force.resume = function () {
+        force.restart = function () {
             return force.alpha(.1);
         };
         force.stop = function () {
@@ -233,9 +233,9 @@
             // 初始化坐标
             for (i = 0; i < n; ++i) {
                 o = nodes[i];
-                if (isNaN(o.x)) o.x = position("x", w);
-                if (isNaN(o.y)) o.y = position("y", h);
-                if (isNaN(o.z)) o.z = position("z", z);
+                if (isNaN(o.x)) o.x = position("x", w, center[0]);
+                if (isNaN(o.y)) o.y = position("y", h, center[1]);
+                if (isNaN(o.z)) o.z = position("z", z, center[2]);
                 if (isNaN(o.px)) o.px = o.x;
                 if (isNaN(o.py)) o.py = o.y;
                 if (isNaN(o.pz)) o.pz = o.z;
@@ -266,7 +266,7 @@
                     charges[i] = charge;
 
 
-            function position(dimension, size) {
+            function position(dimension, size, center) {
                 if (!neighbors) {
                     neighbors = new Array(n);
                     for (j = 0; j < n; ++j) {
@@ -279,21 +279,24 @@
                     }
                 }
                 var candidates = neighbors[i], j = -1, l = candidates.length, x;
-                return Math.random() * size;
+                if (typeof center != "undefined")
+                    return (Math.random() * size) - size / 2 + center;
+                else
+                    return Math.random() * size;
             }
-            return force.resume();
+            return force.restart();
         }
         force.tick = function () {
             // 稳定系数的降低
             if ((alpha *= .99) < .005) {
                 clearInterval(timer)
+                alpha = 0;
                 if (force.eventList.end instanceof Function) {
                     force.eventList.end();
                 }
-                alpha = 0;
                 return true;
             }
-            var n = nodes.length, m = links.length, q, i, o, s, t, l, k, x, y, z;
+            var n = nodes.length, m = links.length, q, i, o, s, t, l, k, x, y, z, maxx = -Infinity, maxy = -Infinity, maxz = -Infinity, minx = Infinity, miny = Infinity, minz = Infinity;
             // 节点根据引力靠近
             for (i = 0; i < m; ++i) {
                 o = links[i];
@@ -319,10 +322,16 @@
             }
             //节点根据整体引力居中
             if (k = alpha * gravity) {
-                x = size[0] / 2;
-                y = size[1] / 2;
-                z = size[2] / 2;
-
+                if (Object.keys(center).length) {
+                    x = center[0];
+                    y = center[1];
+                    z = center[2];
+                }
+                else {
+                    x = size[0] / 2;
+                    y = size[1] / 2;
+                    z = size[2] / 2;
+                }
                 i = -1;
 
                 if (k) while (++i < n) {
@@ -357,11 +366,31 @@
                     o.y -= (o.py - (o.py = o.y)) * friction;
                     o.z -= (o.pz - (o.pz = o.z)) * friction;
                 }
+                if (maxx < o.x) {
+                    maxx = o.x;
+                }
+                if (maxy < o.y) {
+                    maxy = o.y;
+                }
+                if (maxz < o.z) {
+                    maxz = o.z;
+                }
+                if (minx > o.x) {
+                    minx = o.x;
+                }
+                if (miny > o.y) {
+                    miny = o.y;
+                }
+                if (minz > o.z) {
+                    minz = o.z;
+                }
+                size[0] = maxx - minx;
+                size[1] = maxy - miny;
+                size[2] = maxz - minz;
             }
             if (force.eventList.tick instanceof Function) {
                 force.eventList.tick();
             }
-            // force.tick();            
         }
         force.on = function (type, listener) {
             if (typeof force.eventList[type] == "undefined") {
@@ -369,29 +398,54 @@
             }
             return force;
         };
-    //     force.drag = function () {
-    //         if (!drag) drag = d3.behavior.drag().origin((d)=>d).on("dragstart.force", d3_layout_forceDragstart).on("drag.force", dragmove).on("dragend.force", d3_layout_forceDragend);
-    //         if (!arguments.length) return drag;
-    //         this.on("mouseover.force", d3_layout_forceMouseover).on("mouseout.force", d3_layout_forceMouseout).call(drag);
-    //     };
-    //     function dragmove(d) {
-    //         d.px = d3.event.x, d.py = d3.event.y;
-    //         force.resume();
-    //     }
-    //     function d3_layout_forceDragstart(d) {
-    //         d.fixed |= 2;
-    //     }
-    //     function d3_layout_forceDragend(d) {
-    //         d.fixed &= ~6;
-    //     }
-    //     function d3_layout_forceMouseover(d) {
-    //         d.fixed |= 4;
-    //         d.px = d.x, d.py = d.y;
-    //     }
-    //     function d3_layout_forceMouseout(d) {
-    //         d.fixed &= ~4;
-    //     }
-    //     return force;
+        force.center = function (x, y, z) {
+            center = [x,y,z];
+            let sumX = 0, sumY = 0, sumZ = 0, averageX = 0, averageY = 0, averageZ = 0, deltaX = 0, deltaY = 0, deltaZ = 0;
+            for (let i = 0; i < nodes.length; i++) {
+                sumX += nodes[i].x;
+                sumY += nodes[i].y;
+                sumZ += nodes[i].z;
+            }
+            averageX = sumX / nodes.length;
+            averageY = sumY / nodes.length;
+            averageZ = sumZ / nodes.length;
+            if (!arguments.length) {
+                return [ averageX, averageY, averageZ ]
+            } else {
+                deltaX = x - averageX;
+                deltaY = y - averageY;
+                deltaZ = z - averageZ;
+                for (let i = 0; i < nodes.length; i++) {
+                    nodes[i].x += deltaX;
+                    nodes[i].y += deltaY;
+                    nodes[i].z += deltaZ;
+                }
+                return force
+            }
+        };
+        // force.drag = function () {
+        //     if (!drag) drag = d3.behavior.drag().origin((d)=>d).on("dragstart.force", d3_layout_forceDragstart).on("drag.force", dragmove).on("dragend.force", d3_layout_forceDragend);
+        //     if (!arguments.length) return drag;
+        //     this.on("mouseover.force", d3_layout_forceMouseover).on("mouseout.force", d3_layout_forceMouseout).call(drag);
+        // };
+        // function dragmove(d) {
+        //     d.px = d3.event.x, d.py = d3.event.y;
+        //     force.resume();
+        // }
+        // function d3_layout_forceDragstart(d) {
+        //     d.fixed |= 2;
+        // }
+        // function d3_layout_forceDragend(d) {
+        //     d.fixed &= ~6;
+        // }
+        // function d3_layout_forceMouseover(d) {
+        //     d.fixed |= 4;
+        //     d.px = d.x, d.py = d.y;
+        // }
+        // function d3_layout_forceMouseout(d) {
+        //     d.fixed &= ~4;
+        // }
+        return force;
     }
     this.force_3D = force_3D;
 })();

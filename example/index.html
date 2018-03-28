@@ -63,66 +63,25 @@
 		d3.json('Data/Block.json', function (data) {
 			run(data);
 		})
-
 		function run(testData) {
 			var width = 500;
 			var height = 500;
 			var long = 500;
 			var force = force_3D.force()
 				.size([width, height, long])
+				.center(0,0,0)
 				.nodes(testData.nodes)
 				.links(testData.links);
 			force.on("start", function () {
-				console.log("start");
+				console.trace("布局开始");
 			})
 				.on("end", function () {
-					console.log("end");
-					console.log(testData.links.length);
-					console.log(testData.nodes.length);
-					var dx = 0;
-					var dy = 0;
-					var dz = 0;
-					var maxX = -Infinity;
-					var maxY = -Infinity;
-					var maxZ = -Infinity;
-					var minX = Infinity;
-					var minY = Infinity;
-					var minZ = Infinity;
-					var nodes = testData.nodes;
-					for (var i = 0; i < nodes.length; i++) {
-						if (nodes[i].x > maxX) {
-							maxX = nodes[i].x;
-						}
-						if (nodes[i].z > maxZ) {
-							maxZ = nodes[i].z;
-						}
-						if (nodes[i].y > maxY) {
-							maxY = nodes[i].y;
-						}
-						if (nodes[i].x < minX) {
-							minX = nodes[i].x;
-						}
-						if (nodes[i].y < minY) {
-							minY = nodes[i].y;
-						}
-						if (nodes[i].z < minZ) {
-							minZ = nodes[i].z;
-						}
-					}
-					console.log("MaxX " + maxX);
-					console.log("MaxY " + maxY);
-					console.log("MaxZ " + maxZ);
-
-					console.log("MinX " + minX);
-					console.log("MinY " + minY);
-					console.log("MinZ " + minZ);
-
-					console.log("dX " + (maxX - minX));
-					console.log("dY " + (maxY - minY));
-					console.log("dZ " + (maxZ - minZ));
+					console.log("布局结束");
+					console.log(testData.links);
+					console.table(testData.links);
 				})
 				.on('tick', function () {
-					// console.log(force.alpha());
+					// console.count("COUNT");
 				})
 				.start()
 
@@ -243,7 +202,7 @@
 					particleGeometry.verticesNeedUpdate = true;
 					lineGeometry.verticesNeedUpdate = true;
 					particleGeometry.computeBoundingSphere();
-					controls.target = particleGeometry.boundingSphere.center;
+					// controls.target = particleGeometry.boundingSphere.center;
 
 					renderer.render(scene, camera);
 					controls.update();

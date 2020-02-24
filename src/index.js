@@ -20,7 +20,7 @@ force3D.force = function() {
 		distances,
 		strengths,
     charges,
-    
+  
 	function repulse(node) {
 		return function(oct, x1, y1, z1, x2, y2, z2) {
 			if (oct.point !== node) {
@@ -93,15 +93,40 @@ force3D.force = function() {
 		if (!arguments.length) return nodes;
 		nodes = x;
 		return force;
-	};
+  };
 	force.links = function(x) {
 		if (!arguments.length) return links;
 		links = x;
 		return force;
-	};
+  };
+  force.friction = function(x) {
+		if (!arguments.length) return friction;
+		friction = x;
+		return force;
+  };
+  force.linkStrength = function(x){
+		if (!arguments.length) return linkStrength;
+		linkStrength = x;
+		return force;
+  };
+  force.linkStrength = function(x){
+		if (!arguments.length) return linkDistance;
+		linkDistance = x;
+		return force;
+  };
 	force.size = function(x) {
 		if (!arguments.length) return size;
 		size = x;
+		return force;
+  };
+  force.charge = function(x) {
+		if (!arguments.length) return charge;
+		size = x;
+		return force;
+  };
+  force.chargeDistance = function(x) {
+		if (!arguments.length) return chargeDistance2;
+		chargeDistance2 = x;
 		return force;
 	};
 	force.gravity = function(x) {
@@ -152,12 +177,10 @@ force3D.force = function() {
 			z = size[2],
 			neighbors,
 			o;
-		// 初始化weight
 		for (i = 0; i < n; ++i) {
 			(o = nodes[i]).index = i;
 			o.weight = 0;
 		}
-		// 计算节点weight
 		for (i = 0; i < m; ++i) {
 			o = links[i];
 			if (typeof o.source == 'number') o.source = nodes[o.source];
@@ -173,7 +196,6 @@ force3D.force = function() {
 			++o.source.weight;
 			++o.target.weight;
 		}
-		// 初始化坐标
 		for (i = 0; i < n; ++i) {
 			o = nodes[i];
 			if (isNaN(o.x)) o.x = position('x', w, center[0]);
@@ -245,7 +267,6 @@ force3D.force = function() {
 			minx = Infinity,
 			miny = Infinity,
 			minz = Infinity;
-		// 节点根据引力靠近
 		for (i = 0; i < m; ++i) {
 			o = links[i];
 			s = o.source;
@@ -268,7 +289,6 @@ force3D.force = function() {
 				s.z += z * k;
 			}
 		}
-		//节点根据整体引力居中
 		if ((k = alpha * gravity)) {
 			if (Object.keys(center).length) {
 				x = center[0];
@@ -290,7 +310,6 @@ force3D.force = function() {
 				}
 		}
 
-		//根据电荷斥力排远 V3
 		if (charge) {
 			d3_layout_forceAccumulate((q = octree(nodes)), alpha, charges);
 			i = -1;
@@ -301,7 +320,6 @@ force3D.force = function() {
 			}
 		}
 
-		//根据摩擦系数调整映射位置变换速度
 		i = -1;
 		while (++i < n) {
 			o = nodes[i];

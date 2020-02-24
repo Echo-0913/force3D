@@ -19,8 +19,10 @@ force3D.force = function() {
 		links = [],
 		distances,
 		strengths,
-    charges,
-  
+		charges;
+
+	force.eventList = {};
+
 	function repulse(node) {
 		return function(oct, x1, y1, z1, x2, y2, z2) {
 			if (oct.point !== node) {
@@ -93,38 +95,38 @@ force3D.force = function() {
 		if (!arguments.length) return nodes;
 		nodes = x;
 		return force;
-  };
+	};
 	force.links = function(x) {
 		if (!arguments.length) return links;
 		links = x;
 		return force;
-  };
-  force.friction = function(x) {
+	};
+	force.friction = function(x) {
 		if (!arguments.length) return friction;
 		friction = x;
 		return force;
-  };
-  force.linkStrength = function(x){
+	};
+	force.linkStrength = function(x) {
 		if (!arguments.length) return linkStrength;
 		linkStrength = x;
 		return force;
-  };
-  force.linkStrength = function(x){
+	};
+	force.linkStrength = function(x) {
 		if (!arguments.length) return linkDistance;
 		linkDistance = x;
 		return force;
-  };
+	};
 	force.size = function(x) {
 		if (!arguments.length) return size;
 		size = x;
 		return force;
-  };
-  force.charge = function(x) {
+	};
+	force.charge = function(x) {
 		if (!arguments.length) return charge;
 		size = x;
 		return force;
-  };
-  force.chargeDistance = function(x) {
+	};
+	force.chargeDistance = function(x) {
 		if (!arguments.length) return chargeDistance2;
 		chargeDistance2 = x;
 		return force;

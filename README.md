@@ -148,3 +148,8 @@ If you do not initialize the positions manually, the force layout will initializ
 ### force.center([*x, y, z*])
 
 Creates a centering force with the specified x-, y- and z-  coordinates. If *x* ,*y* and *z* are not specified, they default to ⟨0,0,0⟩.
+
+### force.**on**(*type*, *listener*)
+
+Registers the specified *listener* to receive events of the specified *type* from the force layout. Currently, only "start", "tick", and "end" events are supported.
+
